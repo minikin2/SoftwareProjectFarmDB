@@ -2,12 +2,19 @@
 '''
 Program name: Farm database
 Author: Samantha Kolb
-Date last updated: 7/17/2022
-Synopsis: basic delete, add and update statements
+Date last updated: 7/19/2022
+Synopsis: a createCon function that creates a connection with a database, 
+        a closeConAndCur function that closes a connection and cursor,
+        a getItemID function to get an item's number based off the item's number,
+        a delete function to delete one single record from the database,
+        an add function to add a single record to the database,
+        an update function to update a single record in the database
+
 '''
 import sqlite3 
 from sqlite3 import Error
 
+#this function creates a connection with the database file passed to it
 def createCon(dbFile):
     con = None
     try:
@@ -17,6 +24,15 @@ def createCon(dbFile):
         return -1
      
     return con    
+
+#this function closes the connection and the cursor passed to it
+def closeConAndCur(con, cursor):
+    #close the cursor
+    cursor.close()
+    #close the connection
+    con.close()
+    return
+
 
 #this function gets an item's id from the name
 def getItemID(dbFile, name):
@@ -30,7 +46,7 @@ def getItemID(dbFile, name):
         #select statement to get the item id where the item name is the parameter
         sql = "SELECT item_num "
         sql += "FROM item "
-        sql += "WHERE item_name LIKE '" + str(name) + "';"
+        sql += "WHERE item_name LIKE '" + name + "';"
         cursor.execute(sql)
 
         l =  cursor.fetchall()
@@ -49,10 +65,7 @@ def getItemID(dbFile, name):
         return -1   
 
     finally:
-        #close the cursor
-        cursor.close()
-         #close the connection
-        con.close()
+        closeConAndCur(con, cursor)
 
     
 
@@ -80,11 +93,7 @@ def delete(dbFile, num):
         print("Item not deleted")   
         con.rollback()
 
-    #close the cursor
-    cursor.close()    
-
-   #close the connection
-    con.close()
+    closeConAndCur(con, cursor)
 
 def add(dbFile, name, qnt, desc, cate, unit, price):
 
@@ -105,14 +114,9 @@ def add(dbFile, name, qnt, desc, cate, unit, price):
         print("Item not added")   
         con.rollback()
 
-     #close the cursor
-    cursor.close()    
-    #close the connection
-    con.close()
-
-    return  
+    closeConAndCur(con, cursor)
  
-
+#function to update a record in the database 
 def update(dbFile, num, name, qnt, desc, cate, unit, price):
     con = createCon(dbFile)
      #create a cursor
@@ -132,7 +136,7 @@ SET item_qnt = 0, item_unit = 'single pkg'
 WHERE item_name = 'Raw 3L';'''
         #start the sql statement
         sql = "UPDATE item Set "
-        #if the variable is not null, we will update it, this needs work, I'm not sure that my idea here works great
+        #if the variable is not null or "", we will update it, these variables will be used to create the update statement properly
         if name != None or name != "":
             updateName = True
         if qnt != None or qnt != "":  
@@ -188,60 +192,31 @@ WHERE item_name = 'Raw 3L';'''
     con.commit()
     print("Item " + str(num) + " successfully updated")
     #close the cursor
-    cursor.close()    
-    #close the connection
-    con.close()
-
+    closeConAndCur(con, cursor)
     return  
 
+#this function returns a list of the items
 def view(dbFile):
     con = createCon(dbFile)
 
     cursor = con.cursor()
 
+    try:
+        cursor.execute("SELECT * FROM Item;")
+        items = cursor.fetchall()
 
-    for item in items()
+    except Error as error:
+        print("Error: ", error)
+        print("Items cannot be viewed")
+        items = []
 
-def checkNum(num):
-    if num    
+    closeConAndCur(con, cursor)
 
+    return items
+            
 
+#def checkNum(num):
+    
 #this just is a variable so that I don't have to type the database name over and over
 dbFile = 'Becker Farms Inventory.db'
-'''add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)
-add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)
-add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)'''
 
-if createCon(dbFile) == -1:
-
-    print("Sorry you'll have to retry")
-
- #these are operations on dummy items that have no meaning but can be added, deleted and updated however I want so I can test the functions   
-else:
-    print('Successfully opened the database ' + dbFile)  
-
-    update(dbFile, 147, "Name", None, "ds", "", None, 10)
-
-    id = getItemID(dbFile, "name")
-
-    if bool(id) == False:
-        print("cant do operations on a nonexistent item")
-
-    else:
-
-        num = id[0]
-
-        update(dbFile, num, "", 1, "", None, "unit", None)
-
-        id = getItemID(dbFile, "name")
-        print(num)
-
-        if getItemID(dbFile, "name") == -1:
-            print("Sorry, you'll have to retry")
-
-        else:
-
-            #name, qnt, desc, cate, unit, price
-            update(dbFile, num, "name", 0, None, None, "", "")
-            add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)
-            delete('Becker Farms Inventory.db', num)
