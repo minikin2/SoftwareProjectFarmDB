@@ -1,0 +1,66 @@
+dbFile = 'Becker Farms Inventory.db'
+
+#testing isInt
+print(isInt("ns"))
+print(isInt(2))
+print(isInt(3.3))
+
+#testing view
+print(view(dbFile))
+
+#testing addItem
+#def addItem(dbFile, name, qnt, desc, cate, unit, price):
+#this should not add
+addItem(dbFile, "test", "t", "t", "t", "t", "t")
+#this should not add
+addItem(dbFile, "test", -3, "t", "t", "t", "t")
+#this should not add
+addItem(dbFile, "test", 2, "t", "t", "t", "t")
+#this should not add
+addItem(dbFile, "test", 2, "t", "t", "t", -3)
+#this should not add
+addItem(dbFile, "test", 2, "t", "t", "t", 1.222)
+#this should
+addItem(dbFile, "test", 2, "t", "t", "t", 111.22)
+#this should add
+addItem(dbFile, "test", 2, "t", "t", "t", 2.2)
+#this should add
+addItem(dbFile, "test", 2, "t", "t", "t", 5)
+
+#testing updateItem
+num = getItemID(dbFile, "test")
+#def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
+#this should not work, error qnt
+updateItem(dbFile, num, "", "h", "t", "t", "", "t")
+updateItem(dbFile, num, "", -3, "t", "t", "", "t")
+updateItem(dbFile, num, "", "-1", "t", "t", "", "t")
+#error should be price not qnt 
+updateItem(dbFile, num, "", "2", "t", "t", "", "t")
+updateItem(dbFile, num, "", 3, "t", "t", "", "t")
+updateItem(dbFile, num, "", 3, "t", "t", "", -3)
+updateItem(dbFile, num, "", 3, "t", "t", "", "-1")
+updateItem(dbFile, num, "", 3, "t", "t", None, 3.333)
+#this should work
+updateItem(dbFile, num, "", 3, "t", "t", "", "2")
+updateItem(dbFile, num, "", 3, "t", "t", "", 3)
+
+#this should not work, wrong info or invalid item num
+updateItem(dbFile, 157,"","","","","","")
+updateItem(dbFile, "","",None,"","","","","")
+updateItem(dbFile, "","","",None,"","","")
+updateItem(dbFile, "","","","","","",None)
+updateItem(dbFile, 154,"","","","","","")
+
+#testing isSQL
+print(isSQL("select"))
+print(isSQL("insert dsdfad"))
+print(isSQL("sdfdsf delete"))
+print(isSQL("sdfadfs"))
+print(isSQL("sdfsdropsdfs"))
+
+#testing deleteItem
+deleteItem(dbFile, 155)
+deleteItem(dbFile, getItemID(dbFile, "name"))
+deleteItem(dbFile, "h")
+deleteItem(dbFile, -2)
+deleteItem(dbFile, getItemID(dbFile, "test"))
