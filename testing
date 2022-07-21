@@ -1,44 +1,4 @@
 dbFile = 'Becker Farms Inventory.db'
-#testing add
-'''add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)
-add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)
-add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)'''
-
-#testing createCon, update, getItemID, add and delete
-'''if createCon(dbFile) == -1:
-
-    print("Sorry you'll have to retry")
-
- #these are operations on dummy items that have no meaning but can be added, deleted and updated however I want so I can test the functions   
-else:
-    print('Successfully opened the database ' + dbFile)  
-
-    update(dbFile, 147, "Name", None, "ds", "", None, 10)
-
-    id = getItemID(dbFile, "name")
-
-    
-    if id != -1:
-        num = id[0]
-
-        update(dbFile, num, "", 1, "", None, "unit", None)
-
-        id = getItemID(dbFile, "name")
-        print(num)
-
-        if getItemID(dbFile, "name") == -1:
-            print("Sorry, you'll have to retry")
-        else:
-
-            #name, qnt, desc, cate, unit, price
-            update(dbFile, num, "name", 0, None, None, "", "")
-            add('Becker Farms Inventory.db', "name", 1, "desc", "c", "unit", 10.00)
-            delete('Becker Farms Inventory.db', num)
-
-    #if getItemID return -1 then something went wrong and we don't want to try to do operations
-    else:
-        print("cant do operations on a nonexistent item")
-        '''
 
 #testing isInt
 print(isInt("ns"))
@@ -55,3 +15,40 @@ print(isNumNeg(3.3))
 print(isNumNeg(-0.2))
 print(isNumNeg(5))
 print(isNumNeg(0))
+
+#testing addItem
+#def addItem(dbFile, name, qnt, desc, cate, unit, price):
+#this should not add
+addItem(dbFile, "test", "t", "t", "t", "t", "t")
+#this should not add
+addItem(dbFile, "test", -3, "t", "t", "t", "t")
+#this should not add
+addItem(dbFile, "test", 2, "t", "t", "t", "t")
+#this should not add
+addItem(dbFile, "test", 2, "t", "t", "t", -3)
+#this item should not add
+addItem(dbFile, "test", 2, "t", "t", "t", 1.222)
+#this should add
+addItem(dbFile, "test", 2, "t", "t", "t", 2.2)
+#this should add
+addItem(dbFile, "test", 2, "t", "t", "t", 5)
+
+#testing updateItem
+num = getItemID(dbFile, "test")
+#def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
+updateItem(dbFile, num, "", "h", "t", "t", None, "t")
+updateItem(dbFile, num, "", -3, "t", "t", None, "t")
+updateItem(dbFile, num, "", "-1", "t", "t", None, "t")
+#error should be price not qnt 
+updateItem(dbFile, num, "", "2", "t", "t", None, "t")
+#error should be price not qnt
+updateItem(dbFile, num, "", 3, "t", "t", None, "t")
+updateItem(dbFile, num, "", 3, "t", "t", None, -3)
+updateItem(dbFile, num, "", 3, "t", "t", None, "-1")
+#this should work
+updateItem(dbFile, num, "", 3, "t", "t", None, "2")
+#this should work
+updateItem(dbFile, num, "", 3, "t", "t", None, 3)
+#error should be price
+updateItem(dbFile, num, "", 3, "t", "t", None, 3.333)
+

@@ -6,7 +6,6 @@ Date last updated: 7/21/2022
 Synopsis: a createCon function that creates a connection with a database, 
         a closeConAndCur function that closes a connection and cursor,
         an isInt function to check if a variable is an int
-        an isNegNum function to check if a variable is a number and is positiv
         an isPriceValid function to check if a variable is a valid price
         an isSQL function to check for if a variable is a string of sql statements
         a getItemID function to get an item's number based off the item's number,
@@ -34,29 +33,19 @@ def isInt(num):
     else:
         return False 
 
-
-#this function checks for if a number is negative, it checks that the parameter is either an int or a float first
-#ONLY if the parameter is an int or float that is negative will True be returned
-def isNumNeg(num):
-    if isInt(num) or type(num) == float:
-        if num >= 0:
-            return False
-        else:
-            return True
-    else:
-        return False
-
 #this function checks for if the parameter is a valid price, returns true if the parameter is a valid price, still needs a bit of work
 def isPriceValid(num):
-    if isNumNeg(num):
-        return False
-    else:
+    if isInt(num) and num >= 0:
         return True
+    pattern = re.compile(r"""^[0-9]+(\.[0-9]{1,2})?$""")
+    result = pattern.search(str(num))
+    return bool(result)
 
 
 #this funtion checks a string for if it contains SQL which could cause problems, I'm working on it
 def isSQL(s):
     str(s)
+    pattern = re.compile(r"^")
     match = re.search("select", s)
     return
 
@@ -117,7 +106,8 @@ def getItemID(dbFile, name):
         elif len(l) > 1:
             print("Warning: mulitple items discovered, only the first one will be altered")      
         id = l[0]
-        return id  
+        num = id[0]
+        return num  
     #if there is an error, rollback and return -1
     except Error as error:
         print("Error: ", error)
@@ -135,6 +125,7 @@ def deleteItem(dbFile, num):
         return
      #create a cursor
     cursor = createCur(con)
+
     try:
         
         #delete statement 
@@ -158,6 +149,8 @@ def addItem(dbFile, name, qnt, desc, cate, unit, price):
 
     try:
         con = createCon(dbFile)
+        if con == -1:
+            return
         #create a cursor
         cursor = createCur(con)
         if not isInt(qnt):
@@ -188,7 +181,11 @@ def addItem(dbFile, name, qnt, desc, cate, unit, price):
  
 #function to update a record in the database, returns 0 if it works, -1 if an error occurs
 def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
+    if int(num) == -1:
+        return -1
     con = createCon(dbFile)
+    if con == -1:
+        return
      #create a cursor
     cursor = createCur(con)
     updateName = False
@@ -207,19 +204,25 @@ WHERE item_name = 'Raw 3L';'''
         #start the sql statement
         sql = "UPDATE item Set "
         #if the variable is not null or "", we will update it, these variables will be used to create the update statement properly
-        if name != None or name != "":
+        if name != None and name != "":
             updateName = True
-        if qnt != None or qnt != "":  
+        if qnt != None and qnt != "":  
+            qnt = int(qnt)
+            if not isInt(qnt):
+                raise Error("Quantity must be a positive integer")
+            if qnt < 0:
+                raise Error("Quantity must be a positive integer")
             updateQnt = True
-        if desc != None or desc != "":    
+        if desc != None and desc != "":    
             updateDesc = True
-        if cate != None or desc != "":
+        if cate != None and desc != "":
             updateCate = True
-        if unit != None or unit != "":
+        if unit != None and unit != "":
             updateUnit = True
-        if price != None or price != "":
+        if price != None and price != "":
+            if not isPriceValid(price):
+                raise Error("Price must be a positive number with no more than 2 decimal places")
             updatePrice = True            
-
 
         #these if statements go through and add the sql based on if there is another variable to be updated or not (if there is another variable then a comma is needed)
         if updateName and (updateQnt or updateDesc or updateCate or updateUnit or updatePrice):
@@ -262,6 +265,10 @@ WHERE item_name = 'Raw 3L';'''
         print("Item not updated")   
         con.rollback()
         return -1
+    except ValueError as e:
+        print("Error: ", e)
+        print("Item not updated")   
+        con.rollback()
     finally:
         #close the cursor
         closeConAndCur(con, cursor)
