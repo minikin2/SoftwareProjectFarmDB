@@ -3,15 +3,24 @@
 Program name: Farm database
 Author: Samantha Kolb
 Date last updated: 7/21/2022
-Synopsis: a createCon function that creates a connection with a database, 
+Functions: a createCon function that creates a connection with a database, 
+        a createCur function that creates a cursor with the connection given it
         a closeConAndCur function that closes a connection and cursor,
         an isInt function to check if a variable is an int
         an isPriceValid function to check if a variable is a valid price
         an isSQL function to check for if a variable is a string of sql statements
         a getItemID function to get an item's number based off the item's number,
-        a delete function to delete one single record from the database,
-        an add function to add a single record to the database,
-        an update function to update a single record in the database
+        a deleteItem function to delete one single record from the database,
+        an addItem function to add a single record to the database,
+        an updateItem function to update a single record in the database
+        a viewItems function to return a list of all the values in the item table
+
+        the delete, add, and update functions will all return 0 if everything executes, and an error message if there is an error of some kind
+        the view function will return a list if everything executes, and an error message if not
+        the delete function parameters are: the database file, and the item_num to be deleted (2 parameters)
+        the add function parameters are: the database file, the item name, quantity, description, category, unit, and price (7 parameters)
+        the update function parameters are: the database file, the item number, name, quantity, description, category, unit, and price (8 parameters) 
+            it is almost the same as the add fuction, just with the item number in between the database file and the name
 
 '''
 import re
@@ -34,7 +43,6 @@ def isPriceValid(num):
     result = pattern.search(str(num))
     return bool(result)
 
-
 #this funtion checks a string for if it contains SQL which could cause problems, if everything is ok, will return None
 def isSQL(s):
     pattern = r"(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|JOIN|ALTER|GROUP BY|ORDER BY|;)"
@@ -46,8 +54,7 @@ def createCon(dbFile):
     con = -1
     try:
         con = sqlite3.connect(dbFile)
-    except Error as error:
-        print('There was an error opening the database: ' +  error)
+    except Error:
         return -1
      
     return con    
@@ -58,7 +65,6 @@ def createCur(con):
     try:
         cursor = con.cursor()
     except Error:
-        print("Error")
         return -1
     return cursor
 
@@ -71,20 +77,20 @@ def closeConAndCur(con, cursor):
         con.close()
         return
     except Error:
-        print("Error")
         return -1
 
 #this function gets an item's id from the name
 def getItemID(dbFile, name):
-    con = createCon(dbFile)
-    if con == -1:
-        return -1
 
     try:
-        #create a cursor
+        con = createCon(dbFile)
+        if con == -1:
+            raise Error("connection issue")
+         #create a cursor
         cursor = createCur(con)
-        if(cursor == -1):
-            return -1
+        if cursor == -1:
+            raise Error("cursor issue")
+
         if isSQL(name) != None:
             raise Error("That is not a valid name")
         #select statement to get the item id where the item name is the parameter
@@ -96,38 +102,43 @@ def getItemID(dbFile, name):
         l =  cursor.fetchall()
 
         if len(l) == 0:
-            print("Item not found")
-            return -1
-        elif len(l) > 1:
-            print("Warning: mulitple items discovered, only the first one will be altered")      
+            raise Error("Item not found")
+        #elif len(l) > 1:
+            #print("Warning: mulitple items discovered, only the first one will be altered")      
         id = l[0]
         num = id[0]
         return num  
-    #if there is an error, rollback and return -1
+    #if there is an error, return the error and rollback
     except Error as error:
-        print("Error: ", error)
-        print("Item not found")   
-        return -1   
+        e = "Error: " + str(error) + ". Item not deleted"
+        con.rollback()
+        return e  
 
     finally:
         closeConAndCur(con, cursor)
 
-#this function takes a db connection and an item name and deletes them, returns 0 if all goes well, -1 if there is an error
+#this function takes a db connection and an item name and deletes them, returns 0 if all goes well, and an error message otherwise
 def deleteItem(dbFile, num):
 
     con = createCon(dbFile)
     if con == -1:
-        return -1
+        raise Error("connection issue")
      #create a cursor
     cursor = createCur(con)
     if cursor == -1:
-        return -1
+        raise Error("cursor issue")
 
     try:
         if not isInt(num) or int(num) <= 0:
             raise Error("That is not a valid number")
         elif isSQL(num) != None:
             raise Error("That is not a valid number")
+        selectsql = "SELECT MAX(rowid) from item;"
+        cursor.execute(selectsql)
+        c = cursor.fetchone()
+        id = c[0]
+        if int(num) > id:
+            raise Error("Item not in the database")
         #delete statement 
         sql = "DELETE FROM item WHERE item_num = " + str(num) + ";"
 
@@ -135,43 +146,41 @@ def deleteItem(dbFile, num):
         cursor.execute(sql)
          #commit the changes, SUCCESS!
         con.commit()
-        print("Item successfully deleted")
+        #print("Item successfully deleted")
         return 0
-    #if there is an error let the user know and rollback    
+    #if there is an error, return the error and rollback
     except Error as error:
-        print("Error: ", error)
-        print("Item not deleted")   
+        e = "Error: " + str(error) + ". Item not deleted"
         con.rollback()
-        return -1
+        return e
     except ValueError:
-        print("Error: the value supplied is not a correct value")
-        print("Item not added")
-        return -1
-    except NameError as error:
-        print("Error: ", error)
-        print("Item not deleted")   
+        e = "Error: the value supplied is not a correct value. " + "Item not deleted"
         con.rollback()
-        return -1
+        return e
+    except NameError as error:
+        e = "Error: " + str(error) + ". Item not deleted"
+        con.rollback()
+        return e
     finally:
         closeConAndCur(con, cursor)
 
-#this funtion takes a db connection and all of the attributes of the item table and adds a record with those attributes, returns 0 if all goes well, -1 if there is an error
+#this funtion takes a db connection and all of the attributes of the item table and adds a record with those attributes, returns 0 if all goes well, and an error message otherwise
 def addItem(dbFile, name, qnt, desc, cate, unit, price):
 
     try:
         con = createCon(dbFile)
         if con == -1:
-            return
+            raise Error("connection issue")
         #create a cursor
         cursor = createCur(con)
         if cursor == -1:
-            return -1
+            raise Error("cursor issue")
         if not isInt(qnt):
             raise Error("Quantity must be a positive integer")
         if int(qnt) < 0:
             raise Error("Quantity must be a positive integer")
         if not isPriceValid(price):
-            raise Error("Price must be a positive number")
+            raise Error("Price must be a positive number, e.g. 14.20")
         if isSQL(name) != None:
             raise Error("That is not a valid name")
         if isSQL(desc) != None:
@@ -182,37 +191,40 @@ def addItem(dbFile, name, qnt, desc, cate, unit, price):
             raise Error("That is not a valid unit")
      
         else:
+            #making sure there is an actual name
+            if name == "":
+                raise Error("No item name provided")
+            if unit == "":
+                raise Error("No item unit provided")
             #an insert into statement to insert the function parameters into the item table
             sql = "INSERT INTO Item (item_name, item_qnt, item_desc, item_cate, item_unit, item_price) VALUES ( '" + str(name) + "', " + str(qnt) + ", '" + str(desc) + "', '" + str(cate) + "', '" + str(unit) + "', " + str(price) + ");"
             #execute the statement 
             cursor.execute(sql)
             #commit the changes, SUCCESS!
             con.commit()
-            print("Item successfully added")
+            #print("Item successfully added")
             return 0
     
+    #if there is an error, return the error and rollback
     except Error as error:
-        print("Error: ", error)
-        print("Item not added")   
+        e = "Error: " + str(error) + ". Item not added"
         con.rollback()
-        return -1
+        return e
     except ValueError:
-        print("Error: the value supplied is not a correct value")
-        print("Item not added")
-        return -1
+        e = "Error: the value supplied is not a correct value. " + "Item not added"
+        return e
     finally:
         closeConAndCur(con, cursor)
-
  
-#function to update a record in the database, returns 0 if it works, -1 if an error occurs
+#function to update a record in the database, returns 0 if it works, and an error message otherwise
 def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
     con = createCon(dbFile)
     if con == -1:
-        return
+        raise Error("connection issue")
      #create a cursor
     cursor = createCur(con)
     if cursor == -1:
-            return -1
+        raise Error("cursor issue")
     updateName = False
     updateQnt = False
     updateDesc = False
@@ -221,13 +233,19 @@ def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
     updatePrice = False     
 
     try:
-       
         #start the sql statement
         sql = "UPDATE item Set "
         if not isInt(num):
             raise Error("Item number is not valid")
         if int(num) < 0:
             raise Error("Item number is not valid")
+        selectsql = "SELECT MAX(rowid) from item;"
+        cursor.execute(selectsql)
+        c = cursor.fetchone()
+        id = c[0]
+        if int(num) > id:
+            raise Error("Item not in the database")
+
         #if the variable is not null or "", we will update it, these variables will be used to create the update statement properly
         if name != "" and name != None:
             if isSQL(name) != None:
@@ -256,7 +274,7 @@ def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
                 raise Error("Price must be a positive number with no more than 2 decimal places")
             updatePrice = True            
         if not updateName and not updateQnt and not updateDesc and not updateCate and not updateUnit and not updatePrice:
-            raise Error("no information provided")
+            raise Error("No information provided")
 
         #these if statements go through and add the sql based on if there is another variable to be updated or not (if there is another variable then a comma is needed)
         if updateName and (updateQnt or updateDesc or updateCate or updateUnit or updatePrice):
@@ -291,26 +309,22 @@ def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
         cursor.execute(sql)
         #commit
         con.commit()
-        print("Item " + str(num) + " successfully updated")
-        #an update statement to update a row in the item table
+        #print("Item " + str(num) + " successfully updated")
         return 0
-    #if there is an error, print the error and rollback
+    #if there is an error, return the error and rollback
     except Error as error:
-        print("Error: ", error)
-        print("Item not updated")   
+        e = "Error: " + str(error) + ". Item not updated"
         con.rollback()
-        return -1
+        return e
     except ValueError:
-        print("Error: the value supplied is not a correct value")
-        print("Item not updated")
-        return -1
+        e = "Error: the value supplied is not a correct value. " + "Item not updated"
+        return e
     finally:
         #close the cursor
         closeConAndCur(con, cursor)
 
-
-#this function returns a list of all the items in the item table, if there is an issue or if there are no items, an empty list is returned
-def view(dbFile):
+#this function returns a list of all the items in the item table, if there is an issue or if there are no items, an error message is returned
+def viewItems(dbFile):
     con = createCon(dbFile)
 
     cursor = createCur(con)
@@ -320,12 +334,10 @@ def view(dbFile):
         items = cursor.fetchall()
 
     except Error as error:
-        print("Error: ", error)
-        print("Items cannot be viewed")
-        items = []
+        e = "Error: " + str(error) + ". Items not viewable"
+        return e
 
     closeConAndCur(con, cursor)
 
     return items
-            
-  
+

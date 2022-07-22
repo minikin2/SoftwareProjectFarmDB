@@ -11,38 +11,34 @@ print(view(dbFile))
 #testing addItem
 #def addItem(dbFile, name, qnt, desc, cate, unit, price):
 #this should not add
-addItem(dbFile, "test", "t", "t", "t", "t", "t")
-#this should not add
-addItem(dbFile, "test", -3, "t", "t", "t", "t")
-#this should not add
-addItem(dbFile, "test", 2, "t", "t", "t", "t")
-#this should not add
-addItem(dbFile, "test", 2, "t", "t", "t", -3)
-#this should not add
-addItem(dbFile, "test", 2, "t", "t", "t", 1.222)
-#this should
+print(addItem(dbFile, "test", "t", "t", "t", "t", "t"))
+print(addItem(dbFile, "test", -3, "t", "t", "t", "t"))
+print(addItem(dbFile, "test", 2, "t", "t", "t", "t"))
+print(addItem(dbFile, "test", 2, "t", "t", "t", -3))
+print(addItem(dbFile, "test", 2, "t", "t", "t", 1.222))
+print(addItem(dbFile, "n", 5, "d", "c", "", 2.2))
+print(addItem(dbFile, "", 5, "d", "c", "u", 2.2))
+#this should add
 addItem(dbFile, "test", 2, "t", "t", "t", 111.22)
-#this should add
 addItem(dbFile, "test", 2, "t", "t", "t", 2.2)
-#this should add
 addItem(dbFile, "test", 2, "t", "t", "t", 5)
 
 #testing updateItem
-num = getItemID(dbFile, "test")
+num = getItemID(dbFile, "t")
 #def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
 #this should not work, error qnt
-updateItem(dbFile, num, "", "h", "t", "t", "", "t")
-updateItem(dbFile, num, "", -3, "t", "t", "", "t")
-updateItem(dbFile, num, "", "-1", "t", "t", "", "t")
+print(updateItem(dbFile, num, "", "h", "t", "t", "", "t"))
+print(updateItem(dbFile, num, "", -3, "t", "t", "", "t"))
+print(updateItem(dbFile, num, "", "-1", "t", "t", "", "t"))
 #error should be price not qnt 
-updateItem(dbFile, num, "", "2", "t", "t", "", "t")
-updateItem(dbFile, num, "", 3, "t", "t", "", "t")
-updateItem(dbFile, num, "", 3, "t", "t", "", -3)
-updateItem(dbFile, num, "", 3, "t", "t", "", "-1")
-updateItem(dbFile, num, "", 3, "t", "t", None, 3.333)
+print(updateItem(dbFile, num, "", "2", "t", "t", "", "t"))
+print(updateItem(dbFile, num, "", 3, "t", "t", "", "t"))
+print(updateItem(dbFile, num, "", 3, "t", "t", "", -3))
+print(updateItem(dbFile, num, "", 3, "t", "t", "", "-1"))
+print(updateItem(dbFile, num, "", 3, "t", "t", None, 3.333))
 #this should work
-updateItem(dbFile, num, "", 3, "t", "t", "", "2")
-updateItem(dbFile, num, "", 3, "t", "t", "", 3)
+print(updateItem(dbFile, num, "", 3, "t", "t", "", "2"))
+print(updateItem(dbFile, num, "", 3, "t", "t", "", 3))
 
 #this should not work, wrong info or invalid item num
 updateItem(dbFile, 157,"","","","","","")
@@ -50,6 +46,16 @@ updateItem(dbFile, "","",None,"","","","","")
 updateItem(dbFile, "","","",None,"","","")
 updateItem(dbFile, "","","","","","",None)
 updateItem(dbFile, 154,"","","","","","")
+
+#testing for the update function to refuse a number higher than the highest row id in the table
+dbFile = 'Becker Farms Inventory.db'
+con = createCon(dbFile)
+cursor = createCur(con)
+selectsql = "SELECT MAX(rowid) from item;"
+cursor.execute(selectsql)
+c = cursor.fetchone()
+id = c[0]
+print(id)
 
 #testing isSQL
 print(isSQL("select"))
@@ -59,8 +65,8 @@ print(isSQL("sdfadfs"))
 print(isSQL("sdfsdropsdfs"))
 
 #testing deleteItem
-deleteItem(dbFile, 155)
-deleteItem(dbFile, getItemID(dbFile, "name"))
-deleteItem(dbFile, "h")
-deleteItem(dbFile, -2)
-deleteItem(dbFile, getItemID(dbFile, "test"))
+print(deleteItem(dbFile, 155))
+print(deleteItem(dbFile, getItemID(dbFile, "t")))
+print(deleteItem(dbFile, "h"))
+print(deleteItem(dbFile, -2))
+print(deleteItem(dbFile, getItemID(dbFile, "t")))
