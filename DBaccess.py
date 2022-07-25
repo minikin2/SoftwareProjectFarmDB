@@ -99,7 +99,7 @@ def getItemID(dbFile, name):
         sql += "WHERE item_name LIKE '" + name + "';"
         cursor.execute(sql)
 
-        l =  cursor.fetchall()
+        l = cursor.fetchall()
 
         if len(l) == 0:
             raise Error("Item not found")
@@ -110,7 +110,7 @@ def getItemID(dbFile, name):
         return num  
     #if there is an error, return the error and rollback
     except Error as error:
-        e = "Error: " + str(error) + ". Item not deleted"
+        e = "Error: " + str(error) + ". Item not selected"
         con.rollback()
         return e  
 
@@ -130,9 +130,9 @@ def deleteItem(dbFile, num):
 
     try:
         if not isInt(num) or int(num) <= 0:
-            raise Error("That is not a valid number")
+            raise Error("Item number not valid")
         elif isSQL(num) != None:
-            raise Error("That is not a valid number")
+            raise Error("Item number not valid")
         selectsql = "SELECT MAX(rowid) from item;"
         cursor.execute(selectsql)
         c = cursor.fetchone()
@@ -333,6 +333,25 @@ def viewItems(dbFile):
         cursor.execute("SELECT * FROM Item;")
         items = cursor.fetchall()
 
+    except Error as error:
+        e = "Error: " + str(error) + ". Items not viewable"
+        return e
+
+    closeConAndCur(con, cursor)
+
+    return items
+
+def viewByCate(dbFile, cate):
+
+    try:
+        con = createCon(dbFile)
+
+        cursor = createCur(con)
+        if isSQL(cate) != None:
+            raise Error("That is not a valid name")
+        sql ="SELECT * FROM Item WHERE Item.item_cate LIKE '" + cate + "';"
+        cursor.execute(sql)   
+        items = cursor.fetchall() 
     except Error as error:
         e = "Error: " + str(error) + ". Items not viewable"
         return e
