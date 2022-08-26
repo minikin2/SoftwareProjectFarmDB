@@ -485,19 +485,4 @@ print(updateName(dbFile, 131, 'Veal Filet'))
 print(updateName(dbFile, 132, 'Veal Gr Beef'))
 print(updateName(dbFile, 133, 'Veal Ribs'))'''
 
-#testing addItem
-#def addItem(dbFile, name, qnt, desc, cate, unit, price):
-#this should not add
-print(addItem(dbFile, "test", "t", "t", "t", "t", "t"))
-print(addItem(dbFile, "test", -3, "t", "t", "t", "t"))
-print(addItem(dbFile, "test", 2, "t", "t", "t", "t"))
-print(addItem(dbFile, "test", 2, "t", "t", "t", -3))
-print(addItem(dbFile, "test", 2, "t", "t", "t", 1.222))
-print(addItem(dbFile, "n", 5, "d", "c", "", 2.2))
-print(addItem(dbFile, "", 5, "d", "c", "u", 2.2))
-#this should add
-addItem(dbFile, "test", 2, "t", "t", "t", 111.22)
-addItem(dbFile, "test", 2, "t", "t", "t", 2.2)
-addItem(dbFile, "test", 2, "t", "t", "t", 5)
 
-print(addItem(dbFile, "test", 2, "", "t", "t", 5))

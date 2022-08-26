@@ -23,6 +23,8 @@ addItem(dbFile, "test", 2, "t", "t", "t", 111.22)
 addItem(dbFile, "test", 2, "t", "t", "t", 2.2)
 addItem(dbFile, "test", 2, "t", "t", "t", 5)
 
+print(addItem(dbFile, "test", 2, "", "t", "t", 5))
+
 #testing updateItem
 num = getItemID(dbFile, "t")
 #def updateItem(dbFile, num, name, qnt, desc, cate, unit, price):
@@ -79,3 +81,11 @@ print(viewqnt(dbFile, ""))
 print(viewqnt(dbFile, None))
 print(viewqnt(dbFile, 5))
 print(viewqnt(dbFile, "k"))
+
+#testing view_an_item
+print(view_an_item(dbFile, 1))
+print(view_an_item(dbFile, 5))
+print(view_an_item(dbFile, "l"))
+print(view_an_item(dbFile, None))
+print(view_an_item(dbFile, 2.2))
+print(view_an_item(dbFile, True))

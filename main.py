@@ -27,6 +27,8 @@ root.config(bg='teal')
 #e7b771
 #e7a971
 
+dbFile = 'Becker Farms Inventory.db'
+
 # It getting data from clients and adding them to csv file 
 def additem():
 
@@ -45,11 +47,11 @@ def additem():
         tkMessageBox.showerror("Error","Something went wrong, try again")
 
     else:
-        result=tkMessageBox.askquestion("Submit","You are about to enter following details\n" + e1 + "\n" + e2 + "\n" + e3 + "\n" + e4 + "\n" + e5 + "\n" + e6)
+        result=tkMessageBox.askquestion("Submit","You are about to enter following details\n" + e2 + "\n" + e3 + "\n" + e4 + "\n" + e5 + "\n" + e6 + "\n" + e7)
         clearitem()
         
         if(result =="yes"):
-            r = addItem('Becker Farms Inventory.db', e2, e3, e4, e5, e6)
+            r = addItem('Becker Farms Inventory.db', e2, e3, e4, e5, e6, e7)
             if r == 0:
                 tkMessageBox.showinfo("Success!", "Item successfully added")
             else:
@@ -67,9 +69,8 @@ def deleteitem():
     else:
         result=tkMessageBox.askquestion("Submit","You are about to delete the item\n" + e1)
 
-
         if(result =="yes"):
-            r = deleteItem('Becker Farms Inventory.db', getItemID('Becker Farms Inventory.db', e1))
+            r = deleteItem(dbFile, e1)
             if r == 0:
                 tkMessageBox.showinfo("Success!", "Item successfully deleted")
             else:
@@ -77,6 +78,7 @@ def deleteitem():
     
             entry1.delete(0, END)
     viewitems()
+    
 #update function (can update anything but the name)
 def updateitem():
     # items are being updated
@@ -178,7 +180,7 @@ def clearnames():
 
 def viewitem():
     tree.delete(*tree.get_children())
-    item = view_an_item('Becker Farms Inventory.db', getItemID('Becker Farms Inventory.db', entry1.get()))
+    item = view_an_item('Becker Farms Inventory.db', entry1.get())
     if type(item) == str:
        tkMessageBox.showerror("Error", item)
 
@@ -231,6 +233,7 @@ def clearitem():
     entry4.delete(0, END)
     entry5.delete(0, END)
     entry6.delete(0, END)
+    entry7.delete(0, END)
 
 # string variables
 ItemNum = IntVar()
@@ -286,7 +289,8 @@ entry5 = Entry(Forms, textvariable=Category, width=30)
 entry5.grid(row=4, column=1)
 entry6 = Entry(Forms, textvariable=Unit, width=30)
 entry6.grid(row=5, column=1)
-entry7 = Entry(Forms, textvariable=Price, width=30).grid(row=6, column=1)
+entry7 = Entry(Forms, textvariable=Price, width=30)
+entry7.grid(row=6, column=1)
 
 
 btn_add = Button(Buttons, activebackground='teal', bg= "tan", width=8, text="Add", command=additem).pack(side=LEFT)
