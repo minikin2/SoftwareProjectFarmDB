@@ -70,3 +70,12 @@ print(deleteItem(dbFile, getItemID(dbFile, "t")))
 print(deleteItem(dbFile, "h"))
 print(deleteItem(dbFile, -2))
 print(deleteItem(dbFile, getItemID(dbFile, "t")))
+
+#testing viewqnt
+print(viewqnt(dbFile, "pork"))
+print(viewqnt(dbFile, "beef"))
+print(viewqnt(dbFile, "CHICKEN"))
+print(viewqnt(dbFile, ""))
+print(viewqnt(dbFile, None))
+print(viewqnt(dbFile, 5))
+print(viewqnt(dbFile, "k"))
